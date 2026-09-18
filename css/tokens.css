@@ -1,0 +1,64 @@
+/* 《皇帝》UI Tokens v0.4.2 — Phase 1a */
+:root {
+  /* Base */
+  --bg-void: #0E1014;
+  --bg-hall: #161A22;
+  --bg-panel: #1E2430;
+  --bg-panel-raised: #262D3C;
+  --bg-inset: #12161E;
+  --border-subtle: #2A3344;
+  --border-strong: #3D4A5F;
+  --ink-primary: #E8E2D6;
+  --ink-secondary: #A39B8C;
+  --ink-muted: #6B6570;
+  --ink-inverse: #0E1014;
+
+  /* Accents */
+  --accent-cinnabar: #C45C4A;
+  --accent-cinnabar-dim: #8B3F35;
+  --accent-gold: #C4A35A;
+  --accent-gold-dim: #8A7340;
+  --accent-ink-blue: #3D5A80;
+  --accent-teal: #4A7C74;
+  --accent-steel: #5A6E8A;
+
+  /* State */
+  --state-ok: #5B8F6B;
+  --state-warn: #C49A4A;
+  --state-bad: #B54A4A;
+  --state-vacant: #4A4550;
+
+  /* Realm */
+  --res-money: #C4A35A;
+  --res-grain: #8B9A5A;
+  --res-pop: #7A8FA8;
+  --res-troops: #5A6E8A;
+  --res-prestige: #C45C4A;
+
+  /* Type */
+  --font-display: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "STSong", serif;
+  --font-ui: "Noto Sans TC", "Source Han Sans TC", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  --font-mono: "JetBrains Mono", "Sarasa Mono TC", ui-monospace, monospace;
+
+  --type-title-lg: 600 28px/36px var(--font-display);
+  --type-title-md: 600 22px/28px var(--font-display);
+  --type-title-sm: 600 18px/24px var(--font-ui);
+  --type-body: 400 15px/22px var(--font-ui);
+  --type-label: 500 13px/18px var(--font-ui);
+  --type-caption: 400 12px/16px var(--font-ui);
+  --type-stat: 600 16px/20px var(--font-mono);
+  --type-stat-lg: 600 20px/24px var(--font-mono);
+
+  /* Space / radius / shadow */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-gold-focus: 0 0 0 2px var(--accent-gold);
+}
