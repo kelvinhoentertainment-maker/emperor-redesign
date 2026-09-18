@@ -43,13 +43,18 @@ python3 -m http.server 8080
 
 ```
 index.html
+assets/xuanzheng-hall.png   # 原創宣政殿背景（非全崴素材）
 css/tokens.css   # Designer v0.4.2 tokens
-css/app.css
+css/app.css      # full-bleed hall + bottom 六部 + right action rail
 js/data.js       # 職缺／掛鉤／開局人事
 js/game.js       # 規則、存讀
 js/ui.js         # 宣政殿＋吏部 UI
 js/main.js
 ```
+
+IA（Phase 1a）：頂 HUD；宣政殿 full-bleed 背景＋半透明面板；底欄六部（吏 open）；右側吏部行動軌（官職／任命樹、結束本旬）。
+
+**背景圖**：僅用 `assets/xuanzheng-hall.png`（覆蓋即換圖）。CSS `:root` 內 `--hall-veil-*` / `--*-panel-alpha` 可調遮罩；最終平衡稿待 PM，勿用全崴原作素材。
 
 ## 授權備註
 

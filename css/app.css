@@ -20,23 +20,82 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 
 #app {
   min-height: 100%;
+  height: 100%;
+}
+
+/* —— Hall art (drop-in replace assets/xuanzheng-hall.png; tune veil when PM art lands) —— */
+:root {
+  --hall-bg-image: url('../assets/xuanzheng-hall.png');
+  /* Veil over hall photo — mid defaults; raise if art too bright, lower if too dark */
+  --hall-veil-top: rgba(14, 16, 20, 0.28);
+  --hall-veil-mid-a: rgba(14, 16, 20, 0.10);
+  --hall-veil-mid-b: rgba(14, 16, 20, 0.08);
+  --hall-veil-bottom: rgba(14, 16, 20, 0.32);
+  --hud-panel-alpha: 62%;
+  --surface-panel-alpha: 64%;
+  --rail-panel-alpha: 66%;
+  --ministry-bar-alpha: 68%;
+}
+
+/* —— Shell + full-bleed 宣政殿 background —— */
+.shell {
+  position: relative;
+  min-height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
+  overflow: hidden;
   background: var(--bg-hall);
   box-shadow: var(--shadow-panel);
 }
 
-/* —— HUD —— */
+.stage-bg {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--bg-void);
+  pointer-events: none;
+}
+
+.shell.has-hall-bg .stage-bg {
+  display: block;
+  background-image:
+    linear-gradient(
+      180deg,
+      var(--hall-veil-top) 0%,
+      var(--hall-veil-mid-a) 32%,
+      var(--hall-veil-mid-b) 58%,
+      var(--hall-veil-bottom) 100%
+    ),
+    var(--hall-bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+.shell-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: 100%;
+}
+
+/* —— HUD (dark translucent) —— */
 .hud {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: var(--space-4);
   align-items: start;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) var(--hud-panel-alpha), transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hud-time {
@@ -118,70 +177,32 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 .realm-stat.troops .value { color: var(--res-troops); }
 .realm-stat.prestige .value { color: var(--res-prestige); }
 
-/* —— Main layout —— */
+/* —— Main layout (content + optional right rail) —— */
 .main {
   flex: 1;
   display: grid;
-  grid-template-columns: 160px 1fr;
-  min-height: 480px;
+  grid-template-columns: 1fr;
+  min-height: 0;
+  overflow: hidden;
 }
-
-.ministries {
-  padding: var(--space-4);
-  border-right: 1px solid var(--border-subtle);
-  background: var(--bg-panel);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.ministries h2 {
-  font: var(--type-label);
-  color: var(--ink-secondary);
-  letter-spacing: 0.12em;
-  margin-bottom: var(--space-2);
-  text-transform: none;
-}
-.ministry-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-inset);
-  transition: background 150ms, border-color 150ms;
-  text-align: left;
-}
-.ministry-btn .name {
-  font: var(--type-title-sm);
-}
-.ministry-btn .gate {
-  font: var(--type-caption);
-  color: var(--ink-muted);
-}
-.ministry-btn.open {
-  border-color: var(--accent-ink-blue);
-  background: color-mix(in srgb, var(--accent-ink-blue) 28%, var(--bg-panel));
-}
-.ministry-btn.open:hover {
-  background: color-mix(in srgb, var(--accent-ink-blue) 40%, var(--bg-panel-raised));
-}
-.ministry-btn.open.active {
-  box-shadow: var(--shadow-gold-focus);
-  border-color: var(--accent-gold);
-}
-.ministry-btn.locked_slice {
-  color: var(--ink-secondary);
-}
-.ministry-btn.grey_phase {
-  opacity: 0.45;
-  color: var(--ink-muted);
+.main.with-rail {
+  grid-template-columns: 1fr 240px;
 }
 
 .content {
   padding: var(--space-5);
   overflow: auto;
-  background: var(--bg-hall);
+  min-height: 0;
+}
+
+.panel-surface {
+  background: color-mix(in srgb, var(--bg-panel) var(--surface-panel-alpha), transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .hall-welcome {
@@ -196,6 +217,9 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
   color: var(--ink-secondary);
   margin-bottom: var(--space-3);
 }
+.hall-log {
+  margin-top: var(--space-5);
+}
 .log-line {
   font: var(--type-caption);
   color: var(--ink-secondary);
@@ -203,7 +227,146 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
   border-top: 1px solid var(--border-subtle);
 }
 
+/* —— Right action rail —— */
+.action-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-left: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-panel) var(--rail-panel-alpha), transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: auto;
+}
+.action-rail-head {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.action-rail-title {
+  font: var(--type-title-sm);
+  color: var(--accent-gold);
+}
+.action-rail-sub {
+  font: var(--type-caption);
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+.action-rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+.rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-inset);
+  transition: background 150ms, border-color 150ms;
+}
+.rail-btn:hover:not(:disabled) {
+  background: var(--bg-panel-raised);
+  border-color: var(--accent-gold-dim);
+}
+.rail-btn.active {
+  border-color: var(--accent-gold);
+  box-shadow: var(--shadow-gold-focus);
+  background: color-mix(in srgb, var(--accent-ink-blue) 28%, var(--bg-panel));
+}
+.rail-btn-danger {
+  border-color: color-mix(in srgb, var(--accent-cinnabar) 55%, var(--border-subtle));
+}
+.rail-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-cinnabar) 15%, transparent);
+  border-color: var(--accent-cinnabar);
+}
+.rail-btn-ghost {
+  opacity: 0.92;
+}
+.rail-btn-label {
+  font: var(--type-label);
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+.rail-btn-hint {
+  font: var(--type-caption);
+  color: var(--ink-muted);
+}
+.action-rail-util {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+.btn-compact {
+  padding: var(--space-1) var(--space-2) !important;
+  font: var(--type-caption) !important;
+}
+
+/* —— Bottom ministry bar —— */
+.ministry-bar {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: stretch;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-panel) var(--ministry-bar-alpha), transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ministry-tab {
+  flex: 1;
+  max-width: 120px;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-inset);
+  transition: background 150ms, border-color 150ms;
+}
+.ministry-tab .name {
+  font: var(--type-title-sm);
+  letter-spacing: 0.12em;
+}
+.ministry-tab .gate {
+  font: var(--type-caption);
+  color: var(--ink-muted);
+  min-height: 1em;
+}
+.ministry-tab.open:hover {
+  background: color-mix(in srgb, var(--accent-ink-blue) 40%, var(--bg-panel-raised));
+}
+.ministry-tab.open.active {
+  box-shadow: var(--shadow-gold-focus);
+  border-color: var(--accent-gold);
+  background: color-mix(in srgb, var(--accent-ink-blue) 32%, var(--bg-panel));
+}
+.ministry-tab.locked_slice {
+  color: var(--ink-secondary);
+}
+.ministry-tab.grey_phase {
+  opacity: 0.45;
+  color: var(--ink-muted);
+}
+
 /* —— 吏部 —— */
+.libu-view {
+  /* panel-surface already applied */
+}
 .libu-header {
   display: flex;
   align-items: center;
@@ -228,7 +391,7 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 
 .libu-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 280px;
   gap: var(--space-4);
   align-items: start;
 }
@@ -247,7 +410,7 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 
 .office-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-3);
 }
 
@@ -433,29 +596,6 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 .pool-item .name { font: var(--type-label); }
 .pool-item .stats { font: var(--type-caption); color: var(--ink-secondary); }
 
-/* —— Footer —— */
-.footer {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  padding: var(--space-4) var(--space-5);
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-panel);
-}
-.btn-end-xun {
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--accent-cinnabar);
-  color: var(--accent-cinnabar);
-  font: var(--type-label);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-}
-.btn-end-xun:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-cinnabar) 15%, transparent);
-}
-.footer-spacer { flex: 1; }
-
 /* —— Modal / toast —— */
 .overlay {
   position: fixed;
@@ -529,7 +669,12 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
 
 @media (max-width: 900px) {
   .hud { grid-template-columns: 1fr; }
-  .main { grid-template-columns: 1fr; }
-  .ministries { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border-subtle); }
+  .main.with-rail { grid-template-columns: 1fr; }
+  .action-rail {
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+    max-height: 220px;
+  }
   .libu-layout { grid-template-columns: 1fr; }
+  .ministry-tab { max-width: none; }
 }

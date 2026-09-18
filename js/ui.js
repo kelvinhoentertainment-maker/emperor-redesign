@@ -1,4 +1,4 @@
-/** Phase 1a UI — XuanZhengHall + LibuAppointTree */
+/** Phase 1a UI — XuanZhengHall + LibuAppointTree (IA: bottom ministries + right action rail) */
 
 import {
   MINISTRIES,
@@ -28,14 +28,12 @@ import {
 export function createUI(root) {
   let state = createNewGame();
   let view = 'hall'; // hall | libu
+  let selectedMinistry = 'li'; // Phase 1a: 吏 selected by default
   let selectedOfficeId = null;
   let selectedPoolId = null;
   let modalOpen = false;
 
   const els = {
-    hud: null,
-    main: null,
-    footer: null,
     overlay: null,
     toastHost: null,
   };
@@ -95,6 +93,10 @@ export function createUI(root) {
     return '';
   }
 
+  function showLiRail() {
+    return selectedMinistry === 'li' && !state.gameOver;
+  }
+
   function renderHud() {
     const b = state.body;
     const r = state.realm;
@@ -140,16 +142,51 @@ export function createUI(root) {
       </header>`;
   }
 
+  function renderActionRail() {
+    if (!showLiRail()) return '';
+    const disabled = modalOpen || state.gameOver;
+    const inLibu = view === 'libu';
+    return `
+      <aside class="action-rail" aria-label="吏部行動">
+        <div class="action-rail-head">
+          <div class="action-rail-title">吏部</div>
+          <div class="action-rail-sub">Phase 1a</div>
+        </div>
+        <div class="action-rail-list">
+          <button type="button" class="rail-btn ${inLibu ? 'active' : ''}" data-act="enter-libu" ${disabled ? 'disabled' : ''}>
+            <span class="rail-btn-label">官職／任命樹</span>
+            <span class="rail-btn-hint">${inLibu ? '目前畫面' : '進入吏部'}</span>
+          </button>
+          <button type="button" class="rail-btn rail-btn-danger" data-act="end-xun" ${disabled ? 'disabled' : ''}>
+            <span class="rail-btn-label">結束本旬／退朝</span>
+            <span class="rail-btn-hint">壽命 −1 · 重置行動</span>
+          </button>
+          ${inLibu ? `
+          <button type="button" class="rail-btn rail-btn-ghost" data-act="back-hall" ${disabled ? 'disabled' : ''}>
+            <span class="rail-btn-label">返回宣政殿</span>
+            <span class="rail-btn-hint">朝堂主畫面</span>
+          </button>` : ''}
+        </div>
+        <div class="action-rail-util">
+          <button type="button" class="btn-ghost btn-compact" data-act="save" ${modalOpen ? 'disabled' : ''}>存檔</button>
+          <button type="button" class="btn-ghost btn-compact" data-act="load" ${modalOpen ? 'disabled' : ''}>讀檔</button>
+          <button type="button" class="btn-ghost btn-compact" data-act="download" ${modalOpen ? 'disabled' : ''}>下載</button>
+          <button type="button" class="btn-ghost btn-compact" data-act="upload" ${modalOpen ? 'disabled' : ''}>匯入</button>
+          <input type="file" accept="application/json,.json" id="save-file-input" hidden />
+        </div>
+      </aside>`;
+  }
+
   function renderMinistries() {
     return `
-      <nav class="ministries" aria-label="六部">
-        <h2>六部</h2>
+      <nav class="ministry-bar" aria-label="六部">
         ${MINISTRIES.map((m) => {
-          const active = view === 'libu' && m.id === 'li' ? 'active' : '';
+          const active =
+            selectedMinistry === m.id && m.gate === 'open' ? 'active' : '';
           return `
-            <button type="button" class="ministry-btn ${m.gate} ${active}" data-ministry="${m.id}" title="${m.tip ? escapeHtml(m.tip) : ''}">
+            <button type="button" class="ministry-tab ${m.gate} ${active}" data-ministry="${m.id}" title="${m.tip ? escapeHtml(m.tip) : m.name}">
               <span class="name">${m.name}</span>
-              <span class="gate">${m.gate === 'open' ? '開' : m.gate === 'locked_slice' ? '鎖' : '灰'}</span>
+              <span class="gate">${m.gate === 'open' ? '' : m.gate === 'locked_slice' ? '鎖' : '後'}</span>
             </button>`;
         }).join('')}
       </nav>`;
@@ -194,10 +231,6 @@ export function createUI(root) {
 
     if (office.status === 'vacant') {
       const pool = getPool(state);
-      const gateBase = {
-        actions: state.actionsRemaining >= 1,
-        stamina: state.body.stamina >= APPOINT_STAMINA,
-      };
       return `
         <aside class="detail-panel">
           <h3>${escapeHtml(office.name)}</h3>
@@ -226,7 +259,6 @@ export function createUI(root) {
                 <button type="button" class="btn-primary" data-act="appoint" ${disabled ? 'disabled' : ''}>奏請任命</button>
               </div>`;
           })()}
-          ${!gateBase.actions || !gateBase.stamina ? '' : ''}
         </aside>`;
     }
 
@@ -262,10 +294,9 @@ export function createUI(root) {
 
   function renderLibu() {
     return `
-      <div class="libu-view">
+      <div class="libu-view panel-surface">
         <div class="libu-header">
           <h1>吏部 · 任命</h1>
-          <button type="button" class="btn-ghost" data-act="back-hall">返回宣政殿</button>
         </div>
         <div class="libu-layout">
           <div class="libu-tree">
@@ -290,7 +321,7 @@ export function createUI(root) {
   function renderHall() {
     if (state.gameOver) {
       return `
-        <div class="game-over">
+        <div class="hall-welcome panel-surface game-over">
           <h1>${escapeHtml(state.gameOverReason || '駕崩')}</h1>
           <p style="color:var(--ink-secondary);margin-bottom:16px">Phase 1a 結局占位。可讀檔或開新局。</p>
           <button type="button" class="btn-primary" data-act="new-game">開新局</button>
@@ -298,48 +329,37 @@ export function createUI(root) {
     }
     const recent = (state.log || []).slice(0, 5);
     return `
-      <div class="hall-welcome">
+      <div class="hall-welcome panel-surface">
         <h1>宣政殿</h1>
-        <p>陛下臨朝。點左側「吏」部以任命／罷免官員。戶／兵稍後開放；禮／刑／工 Phase 後。</p>
+        <p>陛下臨朝。底欄選「吏」，右側開行動；「官職／任命樹」進入任命／罷免。戶／兵稍後開放；禮／刑／工 Phase 後。</p>
         <p class="hint-caption">本切片唔跑稅收／募兵結算。空缺掛鉤僅顯示文案。</p>
-        <div style="margin-top:24px">
+        <div class="hall-log">
           ${recent.map((l) => `<div class="log-line">${escapeHtml(l)}</div>`).join('')}
         </div>
       </div>`;
   }
 
-  function renderFooter() {
-    const disabled = modalOpen || state.gameOver;
-    return `
-      <footer class="footer">
-        <button type="button" class="btn-end-xun" data-act="end-xun" ${disabled ? 'disabled' : ''}>結束本旬</button>
-        <div class="footer-spacer"></div>
-        <button type="button" class="btn-ghost" data-act="save" ${modalOpen ? 'disabled' : ''}>存檔</button>
-        <button type="button" class="btn-ghost" data-act="load" ${modalOpen ? 'disabled' : ''}>讀檔</button>
-        <button type="button" class="btn-ghost" data-act="download" ${modalOpen ? 'disabled' : ''}>下載存檔</button>
-        <button type="button" class="btn-ghost" data-act="upload" ${modalOpen ? 'disabled' : ''}>匯入存檔</button>
-        <input type="file" accept="application/json,.json" id="save-file-input" hidden />
-      </footer>`;
-  }
-
   function render() {
+    const hallBg = view === 'hall' || view === 'libu';
     root.innerHTML = `
-      ${renderHud()}
-      <div class="main">
-        ${renderMinistries()}
-        <div class="content">
-          ${view === 'libu' ? renderLibu() : renderHall()}
+      <div class="shell ${hallBg ? 'has-hall-bg' : ''}">
+        <div class="stage-bg" aria-hidden="true"></div>
+        <div class="shell-inner">
+          ${renderHud()}
+          <div class="main ${showLiRail() ? 'with-rail' : ''}">
+            <div class="content">
+              ${view === 'libu' ? renderLibu() : renderHall()}
+            </div>
+            ${renderActionRail()}
+          </div>
+          ${renderMinistries()}
         </div>
       </div>
-      ${renderFooter()}
       <div class="overlay" hidden></div>
       <div class="toast-host" aria-live="polite"></div>
     `;
     els.overlay = root.querySelector('.overlay');
     els.toastHost = root.querySelector('.toast-host');
-    if (modalOpen) {
-      // modal content re-attached by showModal; keep overlay visible empty briefly
-    }
     bind();
   }
 
@@ -402,6 +422,7 @@ export function createUI(root) {
           return;
         }
         view = 'hall';
+        selectedMinistry = 'li';
         selectedOfficeId = null;
         selectedPoolId = null;
         if (res.gameOver) toast(state.gameOverReason);
@@ -432,6 +453,7 @@ export function createUI(root) {
         }
         state = res.state;
         view = 'hall';
+        selectedMinistry = 'li';
         selectedOfficeId = null;
         selectedPoolId = null;
         toast('讀檔成功');
@@ -447,9 +469,15 @@ export function createUI(root) {
         const m = MINISTRIES.find((x) => x.id === id);
         if (!m) return;
         if (m.gate === 'open') {
-          view = 'libu';
-          selectedOfficeId = null;
-          selectedPoolId = null;
+          selectedMinistry = m.id;
+          // Selecting 吏 keeps hall; enter appoint via right rail
+          if (view === 'libu' && m.id === 'li') {
+            // stay in libu with rail
+          } else if (m.id === 'li') {
+            view = 'hall';
+            selectedOfficeId = null;
+            selectedPoolId = null;
+          }
           render();
         } else {
           toast(m.tip || '未開放');
@@ -480,8 +508,20 @@ export function createUI(root) {
       const el = root.querySelector(sel);
       if (el) el.addEventListener('click', fn);
     };
+    act('[data-act="enter-libu"]', () => {
+      if (view === 'libu') {
+        toast('已在任命樹');
+        return;
+      }
+      selectedMinistry = 'li';
+      view = 'libu';
+      selectedOfficeId = null;
+      selectedPoolId = null;
+      render();
+    });
     act('[data-act="back-hall"]', () => {
       view = 'hall';
+      selectedMinistry = 'li';
       selectedOfficeId = null;
       selectedPoolId = null;
       render();
@@ -498,6 +538,7 @@ export function createUI(root) {
     act('[data-act="new-game"]', () => {
       state = createNewGame();
       view = 'hall';
+      selectedMinistry = 'li';
       selectedOfficeId = null;
       selectedPoolId = null;
       render();
@@ -520,6 +561,7 @@ export function createUI(root) {
           }
           state = res.state;
           view = 'hall';
+          selectedMinistry = 'li';
           selectedOfficeId = null;
           selectedPoolId = null;
           toast('匯入成功');
