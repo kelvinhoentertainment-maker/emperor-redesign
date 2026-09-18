@@ -44,7 +44,7 @@ export function createNewGame() {
     },
     province: {
       id: 'province_demo',
-      name: '畿內',
+      name: '北直隸',
     },
     offices,
     officials,
@@ -246,6 +246,20 @@ export function deserialize(json) {
   if (!Array.isArray(raw.officials) || raw.officials.length < 21) {
     return { ok: false, reason: '官員資料不完整' };
   }
+  // Enrich office display fields from current defs (names / desc / place)
+  const offices = structuredClone(raw.offices);
+  for (const def of ALL_OFFICES) {
+    const o = offices[def.officeId];
+    if (!o) continue;
+    o.name = def.name;
+    o.desc = def.desc || '';
+    o.place = def.place || null;
+    o.rank = def.rank;
+    o.interactMode = def.interactMode;
+    o.kind = def.kind;
+  }
+  const province = { ...raw.province, name: '北直隸', id: raw.province?.id || 'province_demo' };
+
   return {
     ok: true,
     state: {
@@ -259,8 +273,8 @@ export function deserialize(json) {
       actionsRemaining: raw.actionsRemaining,
       body: { ...raw.body },
       realm: { ...raw.realm },
-      province: { ...raw.province },
-      offices: structuredClone(raw.offices),
+      province,
+      offices,
       officials: structuredClone(raw.officials),
       libuActionThisXun: !!raw.libuActionThisXun,
       log: Array.isArray(raw.log) ? raw.log : [],

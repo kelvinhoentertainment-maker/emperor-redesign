@@ -678,3 +678,22 @@ button:focus-visible { outline: none; box-shadow: var(--shadow-gold-focus); }
   .libu-layout { grid-template-columns: 1fr; }
   .ministry-tab { max-width: none; }
 }
+
+
+.office-desc,
+.office-desc-detail {
+  font: var(--type-caption);
+  color: var(--ink-secondary);
+  line-height: 1.45;
+  margin-top: 4px;
+  text-align: left;
+}
+.office-desc-detail {
+  margin: 8px 0 10px;
+}
+.place {
+  font: var(--type-caption);
+  color: var(--accent-gold);
+  margin-top: 2px;
+  text-align: left;
+}

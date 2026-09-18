@@ -203,6 +203,8 @@ export function createUI(root) {
             <span class="office-name">${escapeHtml(office.name)}</span>
             <span class="rank">${escapeHtml(office.rank)}</span>
           </div>
+          ${office.place ? `<div class="place">${escapeHtml(office.place)}</div>` : ''}
+          ${office.desc ? `<div class="office-desc">${escapeHtml(office.desc)}</div>` : ''}
           <div class="vacant-label">＋ 任命</div>
           ${office.vacancyCopy ? `<div class="hook">${escapeHtml(office.vacancyCopy)}</div>` : ''}
         </button>`;
@@ -214,6 +216,8 @@ export function createUI(root) {
           <span class="office-name">${escapeHtml(office.name)}</span>
           <span class="rank">${escapeHtml(office.rank)}</span>
         </div>
+        ${office.place ? `<div class="place">${escapeHtml(office.place)}</div>` : ''}
+        ${office.desc ? `<div class="office-desc">${escapeHtml(office.desc)}</div>` : ''}
         <div class="holder">${off ? escapeHtml(off.name) : '—'}</div>
         ${off ? `<div class="holder-stats">忠 ${off.zhong} · 廉 ${off.lian} · 智 ${off.zhi}</div>` : ''}
         ${locked ? '<div class="office-actions-hint">本切片唔開放此職人事</div>' : ''}
@@ -234,7 +238,8 @@ export function createUI(root) {
       return `
         <aside class="detail-panel">
           <h3>${escapeHtml(office.name)}</h3>
-          <div class="meta">${escapeHtml(office.rank)} · 虛位</div>
+          <div class="meta">${escapeHtml(office.rank)} · 虛位${office.place ? ` · ${escapeHtml(office.place)}` : ''}</div>
+          ${office.desc ? `<p class="office-desc-detail">${escapeHtml(office.desc)}</p>` : ''}
           ${office.vacancyCopy ? `<p class="warn-text" style="color:var(--state-bad)">${escapeHtml(office.vacancyCopy)}</p>` : '<p class="hint-caption">職缺空懸</p>'}
           <div class="cost-chip"><span>體力 −${APPOINT_STAMINA}</span><span>行動 −1</span></div>
           <h3 style="font:var(--type-label);margin-bottom:8px;color:var(--ink-secondary)">候選池</h3>
@@ -268,7 +273,8 @@ export function createUI(root) {
     return `
       <aside class="detail-panel">
         <h3>${escapeHtml(off ? off.name : '—')}</h3>
-        <div class="meta">${escapeHtml(office.name)} · ${escapeHtml(office.rank)}${locked ? ' · 只讀' : ''}</div>
+        <div class="meta">${escapeHtml(office.name)} · ${escapeHtml(office.rank)}${office.place ? ` · ${escapeHtml(office.place)}` : ''}${locked ? ' · 只讀' : ''}</div>
+        ${office.desc ? `<p class="office-desc-detail">${escapeHtml(office.desc)}</p>` : ''}
         ${off ? `
           <div class="stat-grid">
             <div class="stat-cell"><span class="k">武</span><span class="v">${off.wu}</span></div>
